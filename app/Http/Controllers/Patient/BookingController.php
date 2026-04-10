@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Patient;
 
 use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
@@ -21,7 +22,9 @@ class BookingController extends Controller
 {
     public function create(Request $request, BookingService $bookingService): View
     {
+        $services = Service::query()->orderBy('name')->get();
         $selectedDoctor = null;
+        $selectedService = null;
         $selectedDate = $request->string('booking_date')->toString();
         $availableSlots = [];
 
@@ -33,8 +36,16 @@ class BookingController extends Controller
                 ->first();
         }
 
-        if ($selectedDoctor && $selectedDate) {
-            $availableSlots = $bookingService->availableSlots($selectedDoctor, Carbon::parse($selectedDate));
+        if ($request->filled('service_id')) {
+            $selectedService = $services->firstWhere('id', $request->integer('service_id'));
+        }
+
+        if ($selectedDoctor && $selectedService && $selectedDate) {
+            $availableSlots = $bookingService->availableSlots(
+                $selectedDoctor,
+                Carbon::parse($selectedDate),
+                $selectedService
+            );
         }
 
         return view('patient.bookings.create', [
@@ -43,8 +54,9 @@ class BookingController extends Controller
                 ->with(['doctorProfile', 'doctorSchedules'])
                 ->orderBy('name')
                 ->get(),
-            'services' => Service::query()->orderBy('name')->get(),
+            'services' => $services,
             'selectedDoctor' => $selectedDoctor,
+            'selectedService' => $selectedService,
             'selectedDate' => $selectedDate,
             'availableSlots' => $availableSlots,
         ]);
@@ -93,7 +105,11 @@ class BookingController extends Controller
 
         $booking->loadMissing(['doctor.doctorProfile', 'patient', 'payment']);
 
-        abort_unless($booking->payment !== null, 404);
+        abort_unless(
+            $booking->payment !== null
+            && $booking->payment->payment_status === PaymentStatus::Paid,
+            404
+        );
 
         return Pdf::loadView('pdf.invoice', [
             'booking' => $booking,

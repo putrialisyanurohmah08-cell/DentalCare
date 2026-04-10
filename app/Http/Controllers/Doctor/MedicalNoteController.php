@@ -40,6 +40,11 @@ class MedicalNoteController extends Controller
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless($booking->doctor_id === $request->user()->id, 403);
+        abort_unless(
+            $booking->booking_status !== BookingStatus::PendingPayment
+            && $booking->booking_status !== BookingStatus::Cancelled,
+            403
+        );
 
         $validated = $request->validate([
             'diagnosis' => ['required', 'string'],

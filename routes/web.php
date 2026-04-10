@@ -26,12 +26,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/history/{booking}/invoice', [BookingController::class, 'invoice'])->name('history.invoice');
+    Route::get('/history/{booking}/medical-record', [BookingController::class, 'medicalRecord'])->name('history.medical-record');
 
     Route::middleware('role:patient')->group(function () {
         Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
         Route::get('/history', [BookingController::class, 'history'])->name('history.index');
-        Route::get('/history/{booking}/invoice', [BookingController::class, 'invoice'])->name('history.invoice');
-        Route::get('/history/{booking}/medical-record', [BookingController::class, 'medicalRecord'])->name('history.medical-record');
     });
 
     Route::prefix('doctor')->name('doctor.')->middleware('role:doctor')->group(function () {

@@ -70,4 +70,21 @@ class MedicalNoteTest extends TestCase
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }
+
+    public function test_doctor_cannot_store_medical_note_for_unpaid_booking(): void
+    {
+        $patient = $this->createPatient();
+        $doctor = $this->createDoctor();
+        $service = $this->createService();
+        $booking = $this->createBooking($patient, $doctor, $service, [
+            'booking_status' => BookingStatus::PendingPayment,
+        ]);
+
+        $this->actingAs($doctor)
+            ->post(route('doctor.medical-notes.store', $booking), [
+                'diagnosis' => 'Belum boleh',
+                'treatment' => 'Belum boleh',
+            ])
+            ->assertForbidden();
+    }
 }

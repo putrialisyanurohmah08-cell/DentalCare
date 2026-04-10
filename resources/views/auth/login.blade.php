@@ -5,6 +5,25 @@
 @section('auth_subtitle', 'Akses dashboard pasien, dokter, atau admin sesuai peran Anda.')
 
 @section('content')
+    @php($googleAuthEnabled = filled(config('services.google.client_id')) && filled(config('services.google.client_secret')) && filled(config('services.google.redirect')))
+
+    @if ($googleAuthEnabled)
+        @include('auth.partials.google-button', [
+            'label' => 'Masuk dengan Google',
+        ])
+
+        <div class="d-flex align-items-center gap-3 my-4">
+            <div class="border-top flex-grow-1"></div>
+            <span class="text-secondary small text-uppercase">atau</span>
+            <div class="border-top flex-grow-1"></div>
+        </div>
+    @else
+        <div class="alert alert-warning border-0 shadow-sm" role="alert">
+            Masuk dengan Google belum aktif di environment ini. Isi <code>GOOGLE_CLIENT_ID</code> dan
+            <code>GOOGLE_CLIENT_SECRET</code> di file <code>.env</code> untuk mengaktifkannya.
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('login') }}" class="d-grid gap-3">
         @csrf
 

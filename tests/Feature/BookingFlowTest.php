@@ -73,10 +73,62 @@ class BookingFlowTest extends TestCase
         ]);
 
         $response = $this->actingAs($patient)
-            ->from(route('booking.create', ['doctor_id' => $doctor->id, 'booking_date' => $date->toDateString()]))
+            ->from(route('booking.create', [
+                'doctor_id' => $doctor->id,
+                'service_id' => $service->id,
+                'booking_date' => $date->toDateString(),
+            ]))
             ->post(route('booking.store'), [
                 'doctor_id' => $doctor->id,
                 'service_id' => $service->id,
+                'booking_date' => $date->toDateString(),
+                'booking_time' => '09:30',
+            ]);
+
+        $response->assertSessionHasErrors('booking_time');
+    }
+
+    public function test_booking_is_rejected_when_service_duration_overlaps_existing_slot(): void
+    {
+        $patient = $this->createPatient();
+        $doctor = $this->createDoctor();
+        $longService = $this->createService([
+            'name' => 'Cabut Gigi',
+            'slug' => 'cabut-gigi-test',
+            'duration_minutes' => 60,
+        ]);
+        $shortService = $this->createService([
+            'name' => 'Kontrol',
+            'slug' => 'kontrol-test',
+            'duration_minutes' => 30,
+            'price' => 150000,
+        ]);
+        $date = Carbon::tomorrow();
+
+        $this->createSchedule($doctor, [
+            'day_of_week' => $date->dayOfWeekIso,
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+            'quota' => 4,
+            'slot_minutes' => 30,
+        ]);
+
+        $existingPatient = $this->createPatient(['email' => 'existing@example.com']);
+        $this->createBooking($existingPatient, $doctor, $longService, [
+            'booking_date' => $date->toDateString(),
+            'booking_time' => '09:00',
+            'booking_status' => BookingStatus::Confirmed,
+        ]);
+
+        $response = $this->actingAs($patient)
+            ->from(route('booking.create', [
+                'doctor_id' => $doctor->id,
+                'service_id' => $shortService->id,
+                'booking_date' => $date->toDateString(),
+            ]))
+            ->post(route('booking.store'), [
+                'doctor_id' => $doctor->id,
+                'service_id' => $shortService->id,
                 'booking_date' => $date->toDateString(),
                 'booking_time' => '09:30',
             ]);
