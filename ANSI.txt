@@ -1,0 +1,238 @@
+Pendahuluan
+
+  Latar belakang
+    Perkembangan teknologi informasi saat ini telah memberikan pengaruh besar
+    terhadap berbagai bidang, termasuk bidang pelayanan kesehatan. Klinik gigi
+    sebagai salah satu fasilitas pelayanan kesehatan membutuhkan sistem yang
+    mampu membantu proses administrasi, reservasi, pembayaran, dan pengelolaan
+    data pasien agar berjalan lebih cepat, rapi, dan mudah dipantau. Apabila
+    proses tersebut masih dilakukan secara manual, klinik dapat mengalami
+    kendala seperti antrean yang tidak teratur, jadwal dokter yang bentrok,
+    kesulitan mencari riwayat kunjungan pasien, serta keterlambatan dalam
+    pencatatan pembayaran dan laporan.
+
+    DentalCare Lite hadir sebagai aplikasi reservasi klinik gigi berbasis web
+    yang dirancang untuk mempermudah pasien, dokter, dan admin dalam menjalankan
+    proses pelayanan klinik. Melalui sistem ini, pasien dapat memilih dokter,
+    layanan, tanggal, dan slot kunjungan secara online. Dokter dapat melihat
+    daftar pasien dan mengisi resume medis secara digital, sedangkan admin dapat
+    mengelola data dokter, layanan, jadwal praktik, user, pembayaran, serta
+    laporan klinik melalui satu sistem yang terpusat.
+
+  Rumusan masalah
+    Berdasarkan latar belakang tersebut, permasalahan yang ingin diselesaikan
+    dalam sistem DentalCare Lite adalah bagaimana menyediakan aplikasi yang
+    dapat mempermudah pasien dalam melakukan reservasi layanan klinik gigi tanpa
+    harus datang langsung ke klinik. Selain itu, sistem juga perlu mampu
+    menampilkan jadwal dokter dan slot kunjungan yang tersedia secara akurat,
+    membantu admin mengelola data operasional klinik secara terpusat, membantu
+    dokter mencatat resume medis secara digital, serta mengelola pembayaran,
+    invoice, dan riwayat reservasi agar lebih otomatis dan terdokumentasi.
+
+  Tujuan sistem
+    Tujuan dari pengembangan sistem DentalCare Lite adalah menyediakan aplikasi
+    reservasi klinik gigi berbasis web yang mudah digunakan oleh pasien, dokter,
+    dan admin. Sistem ini bertujuan untuk memudahkan pasien dalam memilih dokter,
+    layanan, tanggal, dan slot kunjungan, sekaligus membantu klinik mengurangi
+    risiko bentrok jadwal atau double booking. Selain itu, sistem ini juga
+    bertujuan menyediakan proses pembayaran online melalui Midtrans, pembuatan
+    invoice dan resume medis dalam format PDF, serta membantu admin memantau
+    pembayaran, statistik kunjungan, dan laporan pendapatan klinik.
+
+  Ruang lingkup
+    Ruang lingkup sistem DentalCare Lite meliputi halaman publik untuk
+    menampilkan informasi layanan, daftar dokter, dan akses awal reservasi.
+    Sistem juga mencakup autentikasi user berdasarkan role admin, dokter, dan
+    pasien, pendaftaran serta login pasien, reservasi online berdasarkan dokter
+    dan jadwal yang tersedia, pengelolaan pembayaran menggunakan Midtrans,
+    riwayat reservasi, invoice PDF, resume medis PDF, notifikasi database dan
+    email, dashboard dokter, serta dashboard admin untuk mengelola data user,
+    dokter, layanan, jadwal, pembayaran, dan laporan. Sistem ini tidak mencakup
+    pemeriksaan medis otomatis, diagnosis otomatis, pengelolaan stok obat, dan
+    integrasi langsung dengan alat medis.
+
+Identifikasi Stakeholder
+
+  Admin
+    Admin adalah pihak internal klinik yang bertugas mengelola data dan
+    operasional sistem. Admin memiliki akses untuk mengatur data user, dokter,
+    layanan klinik, jadwal praktik, pembayaran, dan laporan. Admin juga dapat
+    memantau statistik reservasi dan pendapatan.
+
+  User / Pelanggan
+    User atau pelanggan dalam sistem ini adalah pasien klinik gigi. Pasien dapat
+    membuat akun, login, memilih layanan, memilih dokter, menentukan jadwal,
+    melakukan reservasi, melanjutkan pembayaran, melihat riwayat kunjungan,
+    mengunduh invoice, dan melihat resume medis setelah dibuat oleh dokter.
+
+  Tambahan jika ada
+    1. Dokter
+       Dokter merupakan pihak internal klinik yang menangani pasien. Dokter dapat
+       melihat daftar pasien sesuai jadwal, memeriksa detail reservasi, dan
+       mengisi resume medis yang berisi diagnosis, tindakan, resep, atau catatan
+       pemeriksaan.
+
+    2. Pemilik atau manajemen klinik
+       Pemilik atau manajemen klinik membutuhkan data laporan untuk memantau
+       jumlah kunjungan pasien, pembayaran, dan pendapatan klinik.
+
+    3. Payment gateway Midtrans
+       Midtrans berperan sebagai layanan pihak ketiga untuk memproses pembayaran
+       online dan mengirimkan status pembayaran ke sistem melalui callback atau
+       webhook.
+
+    4. Sistem email
+       Sistem email digunakan untuk mengirim notifikasi kepada user, seperti
+       informasi reservasi, pembayaran berhasil, dan resume medis yang sudah
+       tersedia.
+
+Deskripsi Sistem
+
+  Gambaran umum sistem
+    DentalCare Lite adalah aplikasi web reservasi klinik gigi yang dibangun
+    menggunakan Laravel 11, PHP 8.2+, Blade, Bootstrap 5, MySQL, Midtrans, dan
+    DomPDF. Sistem ini menyediakan layanan utama berupa reservasi online,
+    pembayaran digital, pengelolaan dokter dan jadwal, pengelolaan layanan,
+    invoice PDF, resume medis PDF, notifikasi, serta laporan admin.
+
+    Secara umum, sistem dibagi menjadi tiga area utama:
+    1. Area publik
+       Berisi halaman utama, daftar layanan, daftar dokter, dan akses awal untuk
+       melakukan reservasi.
+
+    2. Area pasien
+       Digunakan oleh pasien untuk membuat reservasi, melakukan pembayaran,
+       melihat riwayat reservasi, mengunduh invoice, dan melihat resume medis.
+
+    3. Area internal
+       Digunakan oleh dokter dan admin. Dokter mengelola pemeriksaan dan resume
+       medis. Admin mengelola master data, pembayaran, user, jadwal, dan laporan.
+
+  Alur kerja sistem (naratif)
+    Alur dimulai ketika pengunjung membuka halaman DentalCare Lite. Pengunjung
+    dapat melihat informasi layanan klinik dan daftar dokter yang tersedia.
+    Untuk membuat reservasi, pasien memilih dokter, layanan, tanggal kunjungan,
+    dan slot waktu yang masih tersedia. Sistem akan memeriksa jadwal dokter,
+    durasi layanan, kuota harian, dan ketersediaan slot agar tidak terjadi
+    bentrok jadwal.
+
+    Jika pasien belum login, sistem meminta pasien untuk masuk atau mendaftar
+    terlebih dahulu. Setelah data reservasi valid, sistem menyimpan booking dan
+    membuat nomor antrean. Pasien kemudian diarahkan untuk melanjutkan proses
+    pembayaran. Jika konfigurasi Midtrans tersedia, sistem membuat token
+    pembayaran dan pasien dapat membayar melalui metode yang disediakan
+    Midtrans.
+
+    Setelah pembayaran berhasil, Midtrans mengirim callback ke sistem. Sistem
+    memperbarui status pembayaran menjadi lunas dan mengirim notifikasi kepada
+    pasien. Pasien dapat melihat riwayat reservasi dan mengunduh invoice PDF.
+
+    Pada hari kunjungan, dokter membuka dashboard dokter untuk melihat daftar
+    pasien. Setelah pemeriksaan selesai, dokter mengisi resume medis berupa
+    diagnosis, tindakan, resep, dan catatan tambahan. Resume medis tersebut dapat
+    dilihat atau diunduh oleh pasien dalam format PDF.
+
+    Admin menggunakan dashboard internal untuk mengelola data dokter, jadwal,
+    layanan, user, pembayaran, serta laporan kunjungan dan pendapatan. Dengan
+    alur ini, proses operasional klinik menjadi lebih tertata, terdokumentasi,
+    dan mudah dipantau.
+
+Kebutuhan Fungsional
+
+  Ditulis dalam bentuk daftar:
+    1. Sistem dapat menampilkan halaman publik yang berisi informasi klinik,
+       layanan, dokter, dan akses reservasi.
+    2. Sistem dapat menyediakan fitur registrasi akun pasien.
+    3. Sistem dapat menyediakan fitur login untuk admin, dokter, dan pasien.
+    4. Sistem dapat menyediakan login pasien menggunakan akun Google.
+    5. Sistem dapat membedakan hak akses berdasarkan role admin, dokter, dan
+       pasien.
+    6. Sistem dapat menampilkan daftar layanan klinik gigi beserta deskripsi,
+       durasi, dan harga layanan.
+    7. Sistem dapat menampilkan daftar dokter beserta profil dan spesialisasi.
+    8. Sistem dapat menampilkan jadwal praktik dokter berdasarkan hari dan jam
+       layanan.
+    9. Sistem dapat menampilkan slot reservasi yang tersedia berdasarkan dokter,
+       layanan, tanggal, durasi layanan, dan kuota harian.
+    10. Sistem dapat melakukan validasi agar satu slot dokter tidak digunakan
+        oleh lebih dari satu reservasi aktif.
+    11. Sistem dapat membuat reservasi pasien dan menghasilkan nomor antrean.
+    12. Sistem dapat menyimpan catatan tambahan dari pasien untuk dokter.
+    13. Sistem dapat menghubungkan reservasi dengan pembayaran.
+    14. Sistem dapat membuat token pembayaran Midtrans untuk proses pembayaran
+        online.
+    15. Sistem dapat menerima callback atau webhook dari Midtrans untuk
+        memperbarui status pembayaran.
+    16. Sistem dapat menampilkan riwayat reservasi pasien.
+    17. Sistem dapat menyediakan invoice PDF setelah pembayaran berstatus lunas.
+    18. Sistem dapat menyediakan dashboard dokter untuk melihat daftar pasien
+        yang akan ditangani.
+    19. Sistem dapat menyediakan fitur dokter untuk membuat dan memperbarui
+        resume medis pasien.
+    20. Sistem dapat menyediakan resume medis PDF yang dapat diunduh pasien.
+    21. Sistem dapat menyediakan dashboard admin untuk melihat statistik
+        reservasi, kunjungan, dan pendapatan.
+    22. Sistem dapat menyediakan fitur admin untuk mengelola data user.
+    23. Sistem dapat menyediakan fitur admin untuk mengelola data dokter.
+    24. Sistem dapat menyediakan fitur admin untuk mengelola data layanan.
+    25. Sistem dapat menyediakan fitur admin untuk mengelola jadwal dokter.
+    26. Sistem dapat menyediakan fitur admin untuk memantau pembayaran.
+    27. Sistem dapat mengirim notifikasi database dan email terkait reservasi,
+        pembayaran, dan resume medis.
+    28. Sistem dapat menyediakan fitur autentikasi dua faktor menggunakan
+        aplikasi autentikator.
+
+  Minimal: 10 kebutuhan fungsional
+
+Kebutuhan Non-Fungsional
+
+  Minimal: 5 kebutuhan non-fungsional
+    1. Keamanan
+       Sistem harus menjaga keamanan data user, password, pembayaran, dan resume
+       medis. Password harus disimpan dalam bentuk hash, hak akses harus dibatasi
+       berdasarkan role, dan fitur dua faktor digunakan untuk meningkatkan
+       keamanan login.
+
+    2. Ketersediaan
+       Sistem harus dapat diakses melalui browser selama server dan database
+       berjalan dengan baik, sehingga pasien dan pihak klinik dapat menggunakan
+       layanan sesuai kebutuhan operasional.
+
+    3. Kemudahan penggunaan
+       Antarmuka sistem harus mudah dipahami oleh pasien, dokter, dan admin.
+       Proses reservasi, pembayaran, serta pengelolaan data harus dibuat jelas
+       dan tidak membingungkan.
+
+    4. Responsif
+       Tampilan aplikasi harus dapat menyesuaikan ukuran layar perangkat,
+       termasuk desktop, laptop, tablet, dan smartphone.
+
+    5. Integritas data
+       Sistem harus menjaga konsistensi data reservasi, jadwal dokter,
+       pembayaran, dan resume medis. Validasi slot dan kuota harus mencegah
+       double booking.
+
+    6. Performa
+       Sistem harus mampu memproses pencarian slot, pembuatan reservasi,
+       pembayaran, dan laporan dalam waktu yang wajar agar pengguna tidak
+       menunggu terlalu lama.
+
+    7. Maintainability
+       Sistem harus mudah dirawat dan dikembangkan. Penggunaan Laravel,
+       struktur MVC, migration, model, controller, dan view membantu
+       pengembangan lanjutan menjadi lebih terorganisir.
+
+    8. Auditability
+       Data utama harus memiliki informasi audit seperti pembuat data, waktu
+       dibuat, pengubah terakhir, waktu perubahan terakhir, status, dan tanda
+       penghapusan agar aktivitas data dapat ditelusuri.
+
+    9. Reliability
+       Sistem harus mampu menangani proses penting seperti booking dan update
+       pembayaran dengan benar, termasuk saat menerima callback pembayaran dari
+       Midtrans.
+
+    10. Portability
+        Sistem dapat dijalankan pada lingkungan lokal maupun server menggunakan
+        stack PHP, Laravel, MySQL, dan dapat dibantu dengan Docker Compose untuk
+        mempermudah deployment.
