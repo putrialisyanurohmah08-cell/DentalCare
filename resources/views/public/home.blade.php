@@ -58,7 +58,15 @@
                                 <h3 class="h5 fw-bold">{{ $service->name }}</h3>
                                 <p class="text-secondary small">{{ $service->description ?: 'Perawatan profesional dengan standar klinik modern.' }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="fw-semibold">Rp {{ number_format($service->price, 0, ',', '.') }}</span>
+                                    <span>
+                                        @if ($service->hasDiscount())
+                                            <span class="small text-secondary text-decoration-line-through d-block">Rp {{ number_format($service->originalPrice(), 0, ',', '.') }}</span>
+                                            <span class="fw-semibold">Rp {{ number_format($service->price, 0, ',', '.') }}</span>
+                                            <span class="badge rounded-pill text-bg-warning ms-1">Diskon {{ $service->discountPercent() }}%</span>
+                                        @else
+                                            <span class="fw-semibold">Rp {{ number_format($service->price, 0, ',', '.') }}</span>
+                                        @endif
+                                    </span>
                                     <span class="badge rounded-pill text-bg-light">{{ $service->duration_minutes }} menit</span>
                                 </div>
                             </div>

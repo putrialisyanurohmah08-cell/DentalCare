@@ -19,25 +19,25 @@
                 <table class="table align-middle">
                     <thead>
                         <tr>
+                            <th>Aksi</th>
                             <th>Dokter</th>
                             <th>Hari</th>
                             <th>Jam</th>
                             <th>Kuota</th>
                             <th>Slot</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($schedules as $schedule)
                             <tr>
+                                <td class="text-nowrap">
+                                    <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.schedules.edit', $schedule) }}">Edit</a>
+                                </td>
                                 <td>{{ $schedule->doctor->name }}</td>
                                 <td>{{ $schedule->dayLabel() }}</td>
                                 <td>{{ $schedule->formattedTimeRange() }}</td>
                                 <td>{{ $schedule->quota }} pasien</td>
                                 <td>{{ $schedule->slot_minutes }} menit</td>
-                                <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.schedules.edit', $schedule) }}">Edit</a>
-                                </td>
                             </tr>
                         @empty
                             <tr>

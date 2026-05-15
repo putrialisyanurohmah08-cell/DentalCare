@@ -19,16 +19,19 @@
                 <table class="table align-middle">
                     <thead>
                         <tr>
+                            <th>Aksi</th>
                             <th>Dokter</th>
                             <th>Spesialisasi</th>
                             <th>SIP</th>
                             <th>Jadwal aktif</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($doctors as $doctor)
                             <tr>
+                                <td class="text-nowrap">
+                                    <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.doctors.edit', $doctor) }}">Edit</a>
+                                </td>
                                 <td>
                                     <div class="fw-semibold">{{ $doctor->name }}</div>
                                     <div class="small text-secondary">{{ $doctor->email }}</div>
@@ -36,9 +39,6 @@
                                 <td>{{ $doctor->doctorProfile?->specialization }}</td>
                                 <td>{{ $doctor->doctorProfile?->license_number }}</td>
                                 <td>{{ $doctor->doctorSchedules->count() }} hari</td>
-                                <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.doctors.edit', $doctor) }}">Edit</a>
-                                </td>
                             </tr>
                         @empty
                             <tr>

@@ -28,4 +28,18 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('home', absolute: false));
     }
+
+    public function test_registration_validation_errors_are_specific_and_translated(): void
+    {
+        $response = $this->followingRedirects()->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+        ]);
+
+        $response
+            ->assertSee('Password minimal 8 karakter.')
+            ->assertDontSee('validation.min.string');
+    }
 }

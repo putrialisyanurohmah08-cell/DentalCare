@@ -9,6 +9,13 @@ class Service extends BaseModel
 {
     use HasFactory;
 
+    private const DISCOUNTED_SERVICES = [
+        'paket-pasang-behel-atas-bawah-scaling-diskon-20' => [
+            'original_price' => 4850000,
+            'discount_percent' => 20,
+        ],
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -35,5 +42,20 @@ class Service extends BaseModel
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function hasDiscount(): bool
+    {
+        return $this->discountPercent() !== null;
+    }
+
+    public function discountPercent(): ?int
+    {
+        return self::DISCOUNTED_SERVICES[$this->slug]['discount_percent'] ?? null;
+    }
+
+    public function originalPrice(): ?int
+    {
+        return self::DISCOUNTED_SERVICES[$this->slug]['original_price'] ?? null;
     }
 }

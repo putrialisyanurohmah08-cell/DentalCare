@@ -31,6 +31,84 @@ class BookingFlowTest extends TestCase
         ], absolute: false).'#booking-section');
     }
 
+    public function test_home_shows_doctor_schedule_after_doctor_is_selected_without_showing_slots(): void
+    {
+        $patient = $this->createPatient();
+        $doctor = $this->createDoctor();
+        $service = $this->createService();
+        $date = Carbon::parse('2026-05-18');
+
+        $this->createSchedule($doctor, [
+            'day_of_week' => $date->dayOfWeekIso,
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+            'quota' => 4,
+        ]);
+
+        $response = $this->actingAs($patient)->get(route('home', [
+            'doctor_id' => $doctor->id,
+            'service_id' => $service->id,
+            'booking_date' => $date->toDateString(),
+        ]));
+
+        $response->assertOk();
+        $response->assertSee($doctor->name);
+        $response->assertSee('Senin • 09:00 - 12:00 • Kuota 4');
+        $response->assertSee('Klik tombol Cek slot tersedia untuk melihat pilihan jam kunjungan.');
+        $response->assertDontSee('name="booking_time"', false);
+    }
+
+    public function test_home_shows_available_slots_after_slot_check_button_is_used(): void
+    {
+        $patient = $this->createPatient();
+        $doctor = $this->createDoctor();
+        $service = $this->createService();
+        $date = Carbon::parse('2026-05-18');
+
+        $this->createSchedule($doctor, [
+            'day_of_week' => $date->dayOfWeekIso,
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+            'quota' => 4,
+        ]);
+
+        $response = $this->actingAs($patient)->get(route('home', [
+            'doctor_id' => $doctor->id,
+            'service_id' => $service->id,
+            'booking_date' => $date->toDateString(),
+            'check_slots' => '1',
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('name="booking_time"', false);
+        $response->assertSee('value="09:00"', false);
+    }
+
+    public function test_booking_slots_endpoint_returns_available_slots(): void
+    {
+        $doctor = $this->createDoctor();
+        $service = $this->createService();
+        $date = Carbon::parse('2026-05-18');
+
+        $this->createSchedule($doctor, [
+            'day_of_week' => $date->dayOfWeekIso,
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+            'quota' => 4,
+        ]);
+
+        $response = $this->getJson(route('booking.slots', [
+            'doctor_id' => $doctor->id,
+            'service_id' => $service->id,
+            'booking_date' => $date->toDateString(),
+        ]));
+
+        $response->assertOk();
+        $response->assertJson([
+            'slots' => ['09:00', '09:30', '10:00', '10:30', '11:00'],
+        ]);
+    }
+
     public function test_patient_is_redirected_to_payment_page_after_creating_a_booking(): void
     {
         $patient = $this->createPatient();

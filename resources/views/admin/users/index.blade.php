@@ -81,6 +81,7 @@
                 <table class="table align-middle">
                     <thead>
                         <tr>
+                            <th>Aksi</th>
                             <th>User</th>
                             <th>Role</th>
                             <th>Kontak</th>
@@ -88,12 +89,29 @@
                             <th>Reservasi</th>
                             <th>Status</th>
                             <th>Terdaftar</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($users as $managedUser)
                             <tr>
+                                <td>
+                                    <div class="d-flex flex-column align-items-start gap-2">
+                                        <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ route('admin.users.show', $managedUser) }}">Detail</a>
+                                        <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.users.edit', $managedUser) }}">Edit</a>
+                                        @unless ($managedUser->is(auth()->user()))
+                                            <form method="POST" action="{{ route('admin.users.toggle-status', $managedUser) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="btn btn-sm btn-outline-warning rounded-pill" type="submit">{{ $managedUser->Status ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.users.destroy', $managedUser) }}" onsubmit="return confirm('Hapus user ini dari daftar aktif?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Hapus</button>
+                                            </form>
+                                        @endunless
+                                    </div>
+                                </td>
                                 <td>
                                     <div class="fw-semibold">{{ $managedUser->name }}</div>
                                     <div class="small text-secondary">{{ $managedUser->email }}</div>
@@ -113,24 +131,6 @@
                                     </span>
                                 </td>
                                 <td>{{ $managedUser->CreatedDate?->translatedFormat('d M Y') ?? '-' }}</td>
-                                <td class="text-end">
-                                    <div class="d-flex justify-content-end flex-wrap gap-2">
-                                        <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ route('admin.users.show', $managedUser) }}">Detail</a>
-                                        <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.users.edit', $managedUser) }}">Edit</a>
-                                        @unless ($managedUser->is(auth()->user()))
-                                            <form method="POST" action="{{ route('admin.users.toggle-status', $managedUser) }}">
-                                                @csrf
-                                                @method('PATCH')
-                                                <button class="btn btn-sm btn-outline-warning rounded-pill" type="submit">{{ $managedUser->Status ? 'Nonaktifkan' : 'Aktifkan' }}</button>
-                                            </form>
-                                            <form method="POST" action="{{ route('admin.users.destroy', $managedUser) }}" onsubmit="return confirm('Hapus user ini dari daftar aktif?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Hapus</button>
-                                            </form>
-                                        @endunless
-                                    </div>
-                                </td>
                             </tr>
                         @empty
                             <tr>

@@ -75,6 +75,19 @@ services:
       timeout: 5s
       retries: 20
 
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    container_name: dentalcare-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+
+
 volumes:
   dentalcare_mysql:
   dentalcare_vendor:

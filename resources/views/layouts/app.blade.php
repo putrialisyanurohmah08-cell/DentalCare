@@ -50,7 +50,7 @@
             <header class="dashboard-topbar border-bottom bg-white">
                 <div class="container-fluid px-4 py-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div>
-                        <div class="text-secondary small">@yield('page_kicker', 'DentalCare Lite')</div>
+                        <div class="text-secondary small">@yield('page_kicker', 'DentalCare')</div>
                         <h1 class="h4 fw-bold mb-0">@yield('page_title', 'Dashboard')</h1>
                     </div>
                     <div class="d-flex align-items-center gap-3">
@@ -58,6 +58,7 @@
                             <div class="fw-semibold">{{ $user->name }}</div>
                             <div class="small text-secondary">{{ $user->email }}</div>
                         </div>
+                        <a class="btn btn-outline-primary rounded-pill px-3" href="{{ route('home') }}">Halaman utama</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button class="btn btn-outline-secondary rounded-pill px-3" type="submit">Keluar</button>

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicController::class, 'home'])->name('home');
 Route::get('/services', [PublicController::class, 'services'])->name('services.index');
 Route::get('/doctors', [PublicController::class, 'doctors'])->name('doctors.index');
+Route::get('/booking/slots', [PublicController::class, 'slots'])->name('booking.slots');
 
 Route::get('/booking/create', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/payments/midtrans/callback', PaymentWebhookController::class)->name('payments.callback');

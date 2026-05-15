@@ -10,7 +10,9 @@ use App\Models\Service;
 use App\Models\User;
 use App\Services\BookingService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PublicController extends Controller
@@ -28,6 +30,7 @@ class PublicController extends Controller
         $selectedService = null;
         $selectedDate = $request->string('booking_date')->toString();
         $availableSlots = [];
+        $slotSearchRequested = $request->boolean('check_slots');
 
         if ($request->filled('doctor_id')) {
             $selectedDoctor = User::query()
@@ -41,7 +44,7 @@ class PublicController extends Controller
             $selectedService = $services->firstWhere('id', $request->integer('service_id'));
         }
 
-        if ($selectedDoctor && $selectedService && $selectedDate) {
+        if ($slotSearchRequested && $selectedDoctor && $selectedService && $selectedDate) {
             $availableSlots = $bookingService->availableSlots(
                 $selectedDoctor,
                 Carbon::parse($selectedDate),
@@ -62,6 +65,7 @@ class PublicController extends Controller
             'selectedService' => $selectedService,
             'selectedDate' => $selectedDate,
             'availableSlots' => $availableSlots,
+            'slotSearchRequested' => $slotSearchRequested,
             'stats' => [
                 'doctors' => User::query()->where('role', UserRole::Doctor->value)->count(),
                 'services' => Service::query()->count(),
@@ -75,6 +79,32 @@ class PublicController extends Controller
     {
         return view('public.services', [
             'services' => Service::query()->latest()->paginate(9),
+        ]);
+    }
+
+    public function slots(Request $request, BookingService $bookingService): JsonResponse
+    {
+        $validated = $request->validate([
+            'doctor_id' => [
+                'required',
+                Rule::exists('users', 'id')->where('role', UserRole::Doctor->value),
+            ],
+            'service_id' => ['required', Rule::exists('services', 'id')],
+            'booking_date' => ['required', 'date', 'after_or_equal:today'],
+        ]);
+
+        $doctor = User::query()
+            ->where('role', UserRole::Doctor->value)
+            ->whereKey($validated['doctor_id'])
+            ->firstOrFail();
+        $service = Service::query()->whereKey($validated['service_id'])->firstOrFail();
+
+        return response()->json([
+            'slots' => $bookingService->availableSlots(
+                $doctor,
+                Carbon::parse($validated['booking_date']),
+                $service
+            ),
         ]);
     }
 

@@ -1,5 +1,6 @@
 /.phpunit.cache
 /node_modules
+/node_modules.unwritable.*
 /public/build
 /public/hot
 /public/storage
@@ -8,10 +9,12 @@
 /vendor
 /playwright-temp
 /test-results
+/deploy
 /.codex
 .env
 .env.backup
 .env.production
+.env.hostinger
 /database/*.sqlite
 /database/*.sqlite-*
 /dentalcare.sql

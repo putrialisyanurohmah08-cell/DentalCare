@@ -124,6 +124,9 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Cabut Gigi', 'description' => 'Tindakan pencabutan gigi dengan anestesi lokal dan observasi pasca tindakan.', 'duration_minutes' => 60, 'price' => 500000],
             ['name' => 'Tambal Estetik', 'description' => 'Perawatan gigi berlubang menggunakan bahan komposit warna gigi.', 'duration_minutes' => 50, 'price' => 425000],
             ['name' => 'Konsultasi Ortodonti', 'description' => 'Pemeriksaan susunan gigi dan rekomendasi perawatan behel.', 'duration_minutes' => 40, 'price' => 250000],
+            ['name' => 'Pasang Behel Rahang Atas', 'description' => 'Pemasangan behel untuk rahang atas, termasuk pemeriksaan awal dan penyesuaian kawat.', 'duration_minutes' => 90, 'price' => 2500000],
+            ['name' => 'Pasang Behel Rahang Bawah', 'description' => 'Pemasangan behel untuk rahang bawah, termasuk pemeriksaan awal dan penyesuaian kawat.', 'duration_minutes' => 90, 'price' => 2500000],
+            ['name' => 'Paket Pasang Behel Atas Bawah + Scaling Diskon 20%', 'description' => 'Paket pasang behel rahang atas dan bawah ditambah scaling. Harga normal Rp 4.850.000, diskon 20% menjadi Rp 3.880.000.', 'duration_minutes' => 150, 'price' => 3880000],
         ])->map(fn (array $service) => Service::query()->updateOrCreate(
             ['slug' => \Illuminate\Support\Str::slug($service['name'])],
             $service

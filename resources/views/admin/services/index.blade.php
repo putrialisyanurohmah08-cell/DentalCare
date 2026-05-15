@@ -19,23 +19,31 @@
                 <table class="table align-middle">
                     <thead>
                         <tr>
+                            <th>Aksi</th>
                             <th>Layanan</th>
                             <th>Durasi</th>
                             <th>Harga</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($services as $service)
                             <tr>
+                                <td class="text-nowrap">
+                                    <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.services.edit', $service) }}">Edit</a>
+                                </td>
                                 <td>
                                     <div class="fw-semibold">{{ $service->name }}</div>
                                     <div class="small text-secondary">{{ $service->description }}</div>
                                 </td>
                                 <td>{{ $service->duration_minutes }} menit</td>
-                                <td>Rp {{ number_format($service->price, 0, ',', '.') }}</td>
-                                <td class="text-end">
-                                    <a class="btn btn-sm btn-outline-primary rounded-pill" href="{{ route('admin.services.edit', $service) }}">Edit</a>
+                                <td>
+                                    @if ($service->hasDiscount())
+                                        <div class="small text-secondary text-decoration-line-through">Rp {{ number_format($service->originalPrice(), 0, ',', '.') }}</div>
+                                        <div>Rp {{ number_format($service->price, 0, ',', '.') }}</div>
+                                        <span class="badge rounded-pill text-bg-warning">Diskon {{ $service->discountPercent() }}%</span>
+                                    @else
+                                        Rp {{ number_format($service->price, 0, ',', '.') }}
+                                    @endif
                                 </td>
                             </tr>
                         @empty
