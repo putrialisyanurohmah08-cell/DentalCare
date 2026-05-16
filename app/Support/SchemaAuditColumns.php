@@ -11,9 +11,9 @@ class SchemaAuditColumns
         $table->string('CompanyCode', 20);
         $table->tinyInteger('Status')->default(1);
         $table->tinyInteger('IsDeleted')->default(0);
-        $table->string('CreatedBy', 32);
+        $table->string('CreatedBy');
         $table->dateTime('CreatedDate');
-        $table->string('LastUpdatedBy', 32);
+        $table->string('LastUpdatedBy');
         $table->dateTime('LastUpdatedDate');
     }
 }
