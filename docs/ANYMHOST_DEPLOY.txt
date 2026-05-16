@@ -1,0 +1,431 @@
+PANDUAN DEPLOY DENTALCARE KE ANYMHOST CPANEL
+Tanggal acuan: 16 Mei 2026
+
+Project:
+- Nama project: DentalCare Lite
+- Framework: Laravel 11
+- PHP minimal: 8.2
+- Frontend: Vite/Tailwind, asset harus di-build sebelum upload
+- Database: MySQL
+- Target awal: temporary domain dari AnyMHost
+- Data awal: pakai data yang sudah ada di dentalcare.sql
+- Fitur aktif: Google Login dan email OTP/SMTP
+- Fitur belum aktif: Midtrans production
+
+
+1. REKOMENDASI PAKET ANYMHOST
+
+Paket paling murah yang masih bisa dicoba untuk project ini:
+
+Cheap Hosting - Warrior
+- Harga terlihat di website AnyMHost: Rp 5.000/bulan
+- Storage: 1 GB
+- Control panel: cPanel
+- Mendukung pengaturan versi PHP
+- Mendukung email account/webmail
+- Cocok untuk demo, presentasi, atau testing dengan temporary domain
+
+Kenapa Warrior masih cukup?
+- Ukuran root project lokal saat dicek sekitar 195 MB.
+- Folder vendor sekitar 63 MB.
+- ZIP aplikasi deploy saat dicek sekitar 17 MB.
+- Setelah extract, total masih jauh di bawah 1 GB selama tidak menyimpan banyak upload/log.
+
+Catatan penting:
+- Kalau budget masih fleksibel, Soldier 2 GB lebih lega.
+- Kalau ingin SSH, Composer, Git Control, Node.js App, dan Cron Jobs, pilih Developer Hosting Newbie. Itu lebih nyaman untuk developer, tetapi bukan yang paling murah.
+- Untuk target "paling murah namun tetap bisa dihosting", mulai dari Cheap Hosting Warrior sudah masuk akal, karena paket deploy project ini sudah membawa vendor dan asset build sehingga tidak wajib menjalankan Composer/Node di server.
+
+Sebelum bayar, tanyakan ke support AnyMHost:
+1. Apakah Cheap Hosting Warrior mendukung PHP 8.2 atau 8.3?
+2. Apakah tersedia MySQL Database dan phpMyAdmin?
+3. Apakah bisa memakai temporary domain/preview URL sebelum punya domain utama?
+4. Apakah SSL bisa aktif di temporary domain?
+5. Apakah File Manager bisa upload dan extract ZIP?
+6. Apakah bisa membuat atau memakai SMTP email?
+
+
+2. TENTANG TEMPORARY DOMAIN
+
+Saat checkout hosting biasanya sistem tetap meminta domain utama. Kalau belum punya domain:
+- Pilih opsi temporary domain jika tersedia.
+- Jika checkout tetap wajib domain, tanyakan ke support AnyMHost apakah bisa memakai subdomain/temporary domain.
+- Jika tidak bisa, opsi murahnya adalah mengambil bonus domain .my.id/.biz.id jika tersedia pada pembelian tahunan, atau beli domain murah terpisah.
+
+Nanti setelah hosting aktif, catat temporary domain yang diberikan, contoh:
+
+https://nama-temp-anymhost.com
+
+Temporary domain ini akan dipakai di:
+- APP_URL
+- GOOGLE_REDIRECT_URI
+- MIDTRANS_CALLBACK_URL, walaupun Midtrans belum aktif
+
+
+3. SIAPKAN PAKET DEPLOY DI LOKAL
+
+Dari root project lokal, jalankan:
+
+bash scripts/build-hostinger-package.sh
+
+Walaupun nama script-nya hostinger, hasilnya cocok untuk AnyMHost karena sama-sama memakai pola cPanel:
+- Laravel app diletakkan di luar public_html
+- Isi folder public diletakkan di public_html
+
+Output:
+
+deploy/hostinger/dentalcare_app.zip
+deploy/hostinger/public_html.zip
+deploy/hostinger/dentalcare_database.zip
+
+Isi paket:
+- dentalcare_app.zip: source Laravel, vendor, storage, .env template, dan file app lain
+- public_html.zip: index.php, .htaccess, favicon, robots.txt, dan build asset
+- dentalcare_database.zip: dump database dari dentalcare.sql
+
+
+4. STRUKTUR FOLDER DI CPANEL
+
+Di File Manager cPanel AnyMHost, gunakan struktur seperti ini:
+
+/home/USERNAME_CPANEL/
+  dentalcare_app/
+  public_html/
+
+Langkah upload:
+1. Masuk cPanel AnyMHost.
+2. Buka File Manager.
+3. Buat folder dentalcare_app sejajar dengan public_html.
+4. Upload dentalcare_app.zip ke folder dentalcare_app.
+5. Extract dentalcare_app.zip di folder dentalcare_app.
+6. Masuk folder public_html.
+7. Hapus atau backup file default hosting jika ada.
+8. Upload public_html.zip ke folder public_html.
+9. Extract public_html.zip di folder public_html.
+
+File public_html/index.php dari paket deploy sudah diarahkan ke:
+
+../dentalcare_app/vendor/autoload.php
+../dentalcare_app/bootstrap/app.php
+
+Jadi tidak perlu memindahkan semua source Laravel ke public_html.
+
+
+5. BUAT DATABASE MYSQL
+
+Di cPanel:
+1. Buka MySQL Databases.
+2. Buat database baru, contoh:
+   USERNAME_dentalcare
+3. Buat user database, contoh:
+   USERNAME_dentaluser
+4. Buat password database yang kuat.
+5. Add User To Database.
+6. Beri privilege ALL PRIVILEGES.
+7. Simpan:
+   - DB_DATABASE
+   - DB_USERNAME
+   - DB_PASSWORD
+   - DB_HOST, biasanya localhost
+
+
+6. IMPORT DATA EXISTING
+
+Karena kamu ingin memakai data yang sudah ada di project ini, gunakan file:
+
+deploy/hostinger/dentalcare_database.zip
+
+Langkah:
+1. Extract dentalcare_database.zip di komputer atau di cPanel.
+2. Ambil file dentalcare.sql.
+3. Buka phpMyAdmin dari cPanel.
+4. Pilih database yang sudah dibuat.
+5. Klik Import.
+6. Upload dentalcare.sql.
+7. Jalankan import sampai selesai.
+
+Penting tentang migrations dan seeders:
+- Jangan jalankan php artisan migrate:fresh --seed jika ingin mempertahankan data dari dentalcare.sql.
+- dentalcare.sql sudah berisi struktur tabel dan data.
+- File migrations tetap ikut di-upload untuk kebutuhan update struktur database di masa depan.
+- File seeders tetap ikut di-upload untuk kebutuhan membuat data demo dari nol, tetapi tidak perlu dijalankan saat deploy ini.
+- Kalau setelah import kamu menjalankan php artisan migrate, Laravel biasanya tidak akan membuat ulang tabel yang sudah tercatat di tabel migrations.
+- Kalau ingin database benar-benar baru dari nol, baru gunakan php artisan migrate --seed, tetapi hasilnya tidak selalu sama dengan data dentalcare.sql.
+
+
+7. BUAT FILE .ENV DI SERVER
+
+Di folder dentalcare_app, buat file .env.
+Gunakan template berikut, lalu sesuaikan nilainya:
+
+APP_NAME="DentalCare Lite"
+APP_ENV=production
+APP_KEY=base64:ISI_DENGAN_APP_KEY_DARI_ENV_LOKAL_ATAU_GENERATE_BARU
+APP_DEBUG=false
+APP_TIMEZONE=Asia/Jakarta
+APP_URL=https://ISI_TEMPORARY_DOMAIN_ANYMHOST
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=id
+APP_FAKER_LOCALE=id_ID
+APP_COMPANY_CODE=DCL
+
+CLINIC_NAME="DentalCare Lite"
+CLINIC_TAGLINE="Klinik gigi modern untuk keluarga dengan reservasi online yang mudah."
+CLINIC_ADDRESS="ISI_ALAMAT_KLINIK"
+CLINIC_PHONE="ISI_NOMOR_TELEPON"
+CLINIC_EMAIL=ISI_EMAIL_KLINIK
+
+APP_MAINTENANCE_DRIVER=file
+BCRYPT_ROUNDS=12
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=ISI_NAMA_DATABASE_ANYMHOST
+DB_USERNAME=ISI_USERNAME_DATABASE_ANYMHOST
+DB_PASSWORD=ISI_PASSWORD_DATABASE_ANYMHOST
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+CACHE_STORE=database
+CACHE_PREFIX=
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=tls
+MAIL_HOST=ISI_HOST_SMTP
+MAIL_PORT=587
+MAIL_USERNAME=ISI_EMAIL_SMTP
+MAIL_PASSWORD=ISI_PASSWORD_SMTP
+MAIL_FROM_ADDRESS=ISI_EMAIL_SMTP
+MAIL_FROM_NAME="${APP_NAME}"
+
+LOGIN_OTP_DIGITS=6
+LOGIN_OTP_EXPIRES_MINUTES=10
+LOGIN_OTP_MAX_ATTEMPTS=5
+LOGIN_OTP_RESEND_COOLDOWN_SECONDS=60
+
+GOOGLE_CLIENT_ID=ISI_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=ISI_GOOGLE_CLIENT_SECRET
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+AWS_USE_PATH_STYLE_ENDPOINT=false
+
+MIDTRANS_MERCHANT_ID=
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_CALLBACK_URL="${APP_URL}/payments/midtrans/callback"
+
+APPOINTMENT_SLOT_MINUTES=30
+VITE_APP_NAME="${APP_NAME}"
+
+
+8. APP_KEY
+
+Pilihan paling mudah:
+- Pakai APP_KEY dari .env lokal project ini.
+
+Pilihan lain jika ada Terminal/SSH:
+
+cd ~/dentalcare_app
+php artisan key:generate --show
+
+Lalu salin hasilnya ke APP_KEY di .env.
+
+Catatan:
+- APP_KEY harus ada.
+- Jika APP_KEY berubah, data terenkripsi lama seperti secret 2FA/session tertentu bisa tidak terbaca. Untuk deploy demo awal biasanya masih aman, tetapi lebih stabil memakai APP_KEY lokal yang sudah dipakai saat data dibuat.
+
+
+9. KONFIGURASI GOOGLE LOGIN
+
+Di Google Cloud Console:
+1. Buka project Google OAuth kamu.
+2. Buka APIs & Services.
+3. Buka Credentials.
+4. Pilih OAuth 2.0 Client ID yang dipakai project ini.
+5. Tambahkan Authorized redirect URI:
+
+https://ISI_TEMPORARY_DOMAIN_ANYMHOST/auth/google/callback
+
+6. Simpan.
+7. Masukkan client id dan client secret ke .env:
+
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+
+Catatan:
+- Kalau nanti pindah dari temporary domain ke domain asli, update APP_URL dan Authorized redirect URI Google.
+- Google Login butuh HTTPS agar tidak banyak masalah di browser.
+
+
+10. KONFIGURASI EMAIL OTP/SMTP
+
+Untuk OTP email, MAIL_MAILER harus smtp.
+
+Opsi SMTP:
+1. Pakai email hosting dari AnyMHost, jika sudah bisa membuat email account.
+2. Pakai SMTP Gmail dengan App Password.
+3. Pakai provider SMTP lain.
+
+Contoh umum SMTP:
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=tls
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=noreply@example.com
+MAIL_PASSWORD=password_smtp
+MAIL_FROM_ADDRESS=noreply@example.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+Catatan:
+- Jika hanya temporary domain dan belum punya domain email, SMTP dari Gmail/App Password biasanya lebih cepat untuk testing.
+- QUEUE_CONNECTION=sync sengaja dipakai agar email langsung dikirim tanpa perlu queue worker.
+
+
+11. MIDTRANS BELUM DIAKTIFKAN
+
+Karena Midtrans belum aktif:
+- Biarkan MIDTRANS_MERCHANT_ID kosong.
+- Biarkan MIDTRANS_SERVER_KEY kosong.
+- Biarkan MIDTRANS_CLIENT_KEY kosong.
+- Set MIDTRANS_IS_PRODUCTION=false.
+
+Project ini punya fallback saat Midtrans belum dikonfigurasi:
+- Booking tetap bisa membuat data pembayaran pending.
+- Redirect pembayaran Midtrans tidak akan tersedia.
+- Pembayaran asli belum berjalan sampai key Midtrans diisi.
+
+Jika nanti Midtrans aktif, isi:
+
+MIDTRANS_MERCHANT_ID=...
+MIDTRANS_SERVER_KEY=...
+MIDTRANS_CLIENT_KEY=...
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_CALLBACK_URL="${APP_URL}/payments/midtrans/callback"
+
+Untuk production Midtrans sungguhan, ubah MIDTRANS_IS_PRODUCTION=true dan gunakan key production.
+
+
+12. COMMAND LARAVEL SETELAH UPLOAD
+
+Jika paket Cheap Hosting tidak punya SSH, lewati bagian ini.
+Project tetap bisa berjalan karena vendor dan asset build sudah ikut di-upload.
+
+Jika cPanel menyediakan Terminal/SSH:
+
+cd ~/dentalcare_app
+php artisan optimize:clear
+php artisan storage:link
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+Jangan jalankan:
+
+php artisan migrate:fresh --seed
+
+karena itu akan menghapus database dan membuat ulang data.
+
+
+13. PERMISSION FOLDER
+
+Pastikan folder ini writable:
+
+dentalcare_app/storage
+dentalcare_app/bootstrap/cache
+
+Jika ada error permission, set folder tersebut ke 775 lewat File Manager.
+
+
+14. TESTING SETELAH ONLINE
+
+Buka temporary domain:
+
+https://ISI_TEMPORARY_DOMAIN_ANYMHOST
+
+Cek:
+1. Halaman utama tampil.
+2. CSS/JS tampil normal.
+3. Login admin bisa.
+4. Login Google bisa redirect dan callback.
+5. Email OTP terkirim.
+6. Halaman reservasi bisa dibuka.
+7. Database berisi data demo/existing.
+
+Akun demo dari seeder biasanya:
+- Admin: admin@dentalcare.test
+- Patient: patient@dentalcare.test
+- Password demo seeder: password
+
+Catatan:
+- dentalcare.sql juga berisi data yang pernah ada di project lokal, termasuk user Google yang sudah pernah login.
+- Jika password user demo dari SQL berbeda dari seeder, cek data langsung di database atau reset password melalui fitur aplikasi.
+
+
+15. TROUBLESHOOTING
+
+Error 500:
+- Cek APP_KEY.
+- Cek APP_DEBUG sementara true untuk melihat error, lalu balikan ke false.
+- Cek versi PHP minimal 8.2.
+- Cek permission storage dan bootstrap/cache.
+- Cek file .env tidak salah nama.
+
+Tampilan tanpa CSS/JS:
+- Pastikan isi public_html/build ada.
+- Jalankan ulang bash scripts/build-hostinger-package.sh lalu upload public_html.zip lagi.
+
+Database error:
+- Cek DB_DATABASE, DB_USERNAME, DB_PASSWORD.
+- Pastikan user database sudah diberi ALL PRIVILEGES.
+- Pastikan dentalcare.sql sudah di-import.
+
+Google Login error redirect_uri_mismatch:
+- Cek GOOGLE_REDIRECT_URI di .env.
+- Cek Authorized redirect URI di Google Console.
+- Harus sama persis dengan temporary domain.
+
+Email OTP tidak masuk:
+- Cek MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD.
+- Cek apakah provider SMTP mengizinkan login dari aplikasi.
+- Cek spam.
+- Pastikan QUEUE_CONNECTION=sync.
+
+Storage penuh:
+- Hapus ZIP setelah extract dari cPanel.
+- Hapus log lama di dentalcare_app/storage/logs.
+- Upgrade ke Soldier 2 GB jika perlu.
+
+
+16. SUMBER ANYMHOST YANG DIPAKAI
+
+- Panduan Laravel cPanel AnyMHost:
+  https://anymhost.id/blog/cara-upload-project-laravel-pada-hosting-cpanel/
+
+- Cheap Hosting AnyMHost:
+  https://anymhost.id/cheap-hosting/
+
+- Developer Hosting AnyMHost:
+  https://anymhost.id/developer-hosting/
+
+- Limit Resource Hosting AnyMHost:
+  https://anymhost.id/blog/limit-resource-hosting-anymhost/

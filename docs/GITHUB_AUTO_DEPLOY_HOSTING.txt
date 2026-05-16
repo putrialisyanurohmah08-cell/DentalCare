@@ -1,0 +1,407 @@
+PANDUAN HOSTING DENTALCARE DARI GITHUB SEPERTI VERCEL
+Tanggal acuan: 16 Mei 2026
+
+Tujuan:
+- Project terhubung ke GitHub.
+- Setiap push ke branch utama bisa auto deploy.
+- Tidak perlu upload ZIP manual lewat cPanel.
+- Cocok untuk project Laravel 11 + MySQL + Vite/Tailwind.
+
+
+1. REKOMENDASI UTAMA
+
+Pilihan paling cocok untuk project ini:
+
+Railway
+
+Alasan:
+- Bisa deploy langsung dari GitHub repo.
+- Railway punya panduan resmi Laravel.
+- Railway bisa provision MySQL dalam project yang sama.
+- Bisa generate domain bawaan seperti:
+  https://nama-app.up.railway.app
+- Auto deploy setiap push ke GitHub.
+- Mirip pengalaman Vercel, tetapi lebih cocok untuk Laravel full-stack.
+
+Estimasi biaya:
+- Free/Trial bisa dipakai untuk percobaan awal.
+- Hobby plan sekitar USD 5/bulan dan sudah termasuk USD 5 resource usage.
+- Biaya akhir tetap tergantung pemakaian CPU, RAM, storage, database, dan bandwidth.
+
+
+2. ALTERNATIF YANG JUGA BAGUS
+
+A. Laravel Cloud
+
+Kelebihan:
+- Platform resmi Laravel.
+- Sangat cocok untuk Laravel.
+- Bisa connect GitHub/GitLab/Bitbucket.
+- Push to deploy aktif secara default.
+- Mendukung MySQL dan Serverless Postgres.
+- Ada domain bawaan laravel.cloud dan custom domain.
+
+Kapan pilih ini:
+- Kalau ingin platform yang paling "Laravel-native".
+- Kalau ingin fitur Laravel seperti worker, scheduler, database, dan deployment commands terasa rapi.
+
+Catatan:
+- Pricing pay-as-you-go.
+- Ada free usage credit awal, tetapi tetap perlu pantau biaya.
+
+
+B. DigitalOcean App Platform
+
+Kelebihan:
+- Stabil dan mature.
+- Bisa deploy dari GitHub.
+- Ada public URL bawaan.
+- Bisa auto redeploy saat repo berubah.
+- Mendukung web service, worker, job, dan database resource.
+
+Kapan pilih ini:
+- Kalau ingin platform yang lebih enterprise/stabil.
+- Kalau tidak masalah setup sedikit lebih teknis.
+
+Catatan:
+- Biasanya terasa lebih mahal jika butuh managed database terpisah.
+
+
+C. Render
+
+Kelebihan:
+- Auto deploy dari GitHub/GitLab/Bitbucket.
+- UI mudah.
+- Cocok untuk web service berbasis Docker.
+
+Kenapa bukan pilihan utama untuk project ini:
+- Render native managed database utamanya Postgres, bukan MySQL.
+- Project ini sudah memakai MySQL dan punya dump dentalcare.sql.
+- Bisa tetap pakai Render jika memakai MySQL eksternal, tetapi jadi kurang sederhana.
+
+
+3. KENAPA BUKAN VERCEL
+
+Vercel sangat bagus untuk Next.js, React static app, frontend, dan serverless JavaScript.
+Project ini adalah Laravel full-stack yang butuh:
+- PHP 8.2/8.3
+- Composer
+- MySQL
+- storage/cache writable
+- route Laravel
+- queue/email flow
+
+Karena itu, Vercel bukan pilihan natural untuk project ini.
+Railway atau Laravel Cloud lebih cocok.
+
+
+4. HAL PENTING DI PROJECT INI: DOCKERFILE
+
+Repo ini punya Dockerfile di root.
+
+Masalahnya:
+- Railway dapat memakai Dockerfile otomatis jika file itu ada di root repo.
+- Dockerfile project ini hanya menjalankan PHP-FPM.
+- Untuk website publik, PHP-FPM perlu web server seperti Nginx/Caddy.
+- Di lokal, web server disediakan oleh service nginx di docker-compose.yml.
+- Railway tidak otomatis menjalankan docker-compose.yml untuk satu web service.
+
+Artinya:
+- Kalau langsung deploy ke Railway dan Railway memakai Dockerfile root ini, app bisa gagal merespons HTTP.
+
+Ada 2 opsi aman:
+
+Opsi A - Pakai Laravel Cloud
+- Paling minim perubahan repo.
+- Laravel Cloud memang dirancang untuk Laravel.
+- Cocok jika ingin menghindari urusan Dockerfile.
+
+Opsi B - Tetap pakai Railway, tetapi rapikan strategi build
+- Rename Dockerfile lokal menjadi Dockerfile.local lalu update docker-compose.yml agar tetap memakai Dockerfile.local.
+- Biarkan Railway memakai Railpack untuk auto-detect Laravel.
+- Railway Railpack akan menjalankan Laravel via PHP-FPM + Caddy sesuai panduan Railway.
+
+Untuk target "seperti Vercel", Opsi B terasa paling mirip.
+
+
+5. LANGKAH DEPLOY KE RAILWAY
+
+Persiapan GitHub:
+1. Buat repository GitHub.
+2. Push project ini ke GitHub.
+3. Jangan commit file .env.
+4. Jangan commit data rahasia.
+5. Hati-hati dengan dentalcare.sql karena berisi data existing. Jika berisi email/data personal, lebih aman import manual ke Railway, bukan commit public.
+
+Persiapan repo agar Railway tidak salah memakai Dockerfile:
+1. Rename Dockerfile menjadi Dockerfile.local.
+2. Ubah docker-compose.yml:
+
+   dockerfile: Dockerfile
+
+   menjadi:
+
+   dockerfile: Dockerfile.local
+
+3. Commit perubahan itu ke GitHub.
+
+Deploy app:
+1. Login ke https://railway.com/
+2. New Project.
+3. Deploy from GitHub repo.
+4. Pilih repo DentalCare.
+5. Railway akan membuat service app.
+6. Buka Settings > Networking.
+7. Generate Domain.
+8. Catat domain Railway, contoh:
+
+   https://dentalcare-production.up.railway.app
+
+Tambah MySQL:
+1. Di Railway project canvas, klik + New.
+2. Pilih Database.
+3. Pilih MySQL.
+4. Setelah MySQL selesai dibuat, buka tab Variables pada service MySQL.
+5. Railway menyediakan variable seperti:
+   - MYSQLHOST
+   - MYSQLPORT
+   - MYSQLUSER
+   - MYSQLPASSWORD
+   - MYSQLDATABASE
+   - MYSQL_URL
+
+
+6. ENV VARIABLES UNTUK APP SERVICE DI RAILWAY
+
+Di App Service > Variables, isi:
+
+APP_NAME="DentalCare Lite"
+APP_ENV=production
+APP_KEY=base64:ISI_APP_KEY_DARI_ENV_LOKAL
+APP_DEBUG=false
+APP_TIMEZONE=Asia/Jakarta
+APP_URL=https://${{RAILWAY_PUBLIC_DOMAIN}}
+APP_LOCALE=id
+APP_FALLBACK_LOCALE=id
+APP_FAKER_LOCALE=id_ID
+APP_COMPANY_CODE=DCL
+
+CLINIC_NAME="DentalCare Lite"
+CLINIC_TAGLINE="Klinik gigi modern untuk keluarga dengan reservasi online yang mudah."
+CLINIC_ADDRESS="ISI_ALAMAT_KLINIK"
+CLINIC_PHONE="ISI_NOMOR_TELEPON"
+CLINIC_EMAIL=ISI_EMAIL_KLINIK
+
+LOG_CHANNEL=stack
+LOG_STACK=single
+LOG_LEVEL=error
+
+DB_CONNECTION=mysql
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_DATABASE=${{MySQL.MYSQLDATABASE}}
+DB_USERNAME=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+CACHE_STORE=database
+CACHE_PREFIX=
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=tls
+MAIL_HOST=ISI_HOST_SMTP
+MAIL_PORT=587
+MAIL_USERNAME=ISI_EMAIL_SMTP
+MAIL_PASSWORD=ISI_PASSWORD_SMTP
+MAIL_FROM_ADDRESS=ISI_EMAIL_SMTP
+MAIL_FROM_NAME="${APP_NAME}"
+
+LOGIN_OTP_DIGITS=6
+LOGIN_OTP_EXPIRES_MINUTES=10
+LOGIN_OTP_MAX_ATTEMPTS=5
+LOGIN_OTP_RESEND_COOLDOWN_SECONDS=60
+
+GOOGLE_CLIENT_ID=ISI_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=ISI_GOOGLE_CLIENT_SECRET
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+
+MIDTRANS_MERCHANT_ID=
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_CALLBACK_URL="${APP_URL}/payments/midtrans/callback"
+
+APPOINTMENT_SLOT_MINUTES=30
+VITE_APP_NAME="${APP_NAME}"
+
+Catatan:
+- Nama service database di Railway mungkin bukan "MySQL". Jika nama servicenya berbeda, sesuaikan referensi:
+
+  ${{NamaServiceDatabase.MYSQLHOST}}
+
+- Railway mendukung reference variable dengan format:
+
+  ${{SERVICE_NAME.VAR}}
+
+
+7. BUILD DAN DEPLOY COMMAND
+
+Jika memakai Railway Railpack:
+- Railway biasanya auto-detect Laravel.
+- Railway menjalankan app dengan PHP-FPM dan Caddy.
+- Laravel guide Railway menyebut app bisa berjalan tanpa konfigurasi besar.
+
+Jika perlu custom build command, gunakan:
+
+composer install --no-dev --prefer-dist --optimize-autoloader && npm ci && npm run build
+
+Untuk first deploy, jangan langsung jalankan migrate:fresh --seed jika ingin memakai data dentalcare.sql.
+
+
+8. IMPORT DATABASE EXISTING KE RAILWAY MYSQL
+
+Karena kamu ingin memakai data yang sudah ada di project ini, gunakan dentalcare.sql.
+
+Cara paling aman:
+1. Jangan commit dentalcare.sql ke public repo jika berisi data personal.
+2. Install Railway CLI di komputer.
+3. Login:
+
+   railway login
+
+4. Link ke project Railway:
+
+   railway link
+
+5. Buka shell/variable Railway untuk mengambil koneksi MySQL, atau gunakan TCP proxy yang disediakan Railway.
+6. Import SQL dengan mysql client.
+
+Contoh pola command:
+
+mysql -h HOST -P PORT -u USER -p DATABASE < dentalcare.sql
+
+Nilai HOST, PORT, USER, dan DATABASE ambil dari MySQL service Railway.
+
+Penting:
+- Jangan jalankan php artisan migrate:fresh --seed setelah import data existing.
+- dentalcare.sql sudah membawa struktur tabel dan data.
+- Migrations tetap dipakai untuk update database di masa depan.
+- Seeders dipakai hanya kalau ingin membuat data demo dari nol.
+
+
+9. GOOGLE LOGIN DI RAILWAY
+
+Setelah domain Railway jadi, buka Google Cloud Console.
+
+Tambahkan Authorized redirect URI:
+
+https://DOMAIN_RAILWAY/auth/google/callback
+
+Contoh:
+
+https://dentalcare-production.up.railway.app/auth/google/callback
+
+Pastikan di Railway:
+
+APP_URL=https://DOMAIN_RAILWAY
+GOOGLE_REDIRECT_URI="${APP_URL}/auth/google/callback"
+
+
+10. EMAIL OTP/SMTP
+
+Untuk testing paling mudah:
+- Pakai Gmail SMTP dengan App Password, atau
+- Pakai SMTP provider lain.
+
+Gunakan:
+
+MAIL_MAILER=smtp
+MAIL_SCHEME=tls
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=email@gmail.com
+MAIL_PASSWORD=app_password_gmail
+MAIL_FROM_ADDRESS=email@gmail.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+QUEUE_CONNECTION=sync
+
+QUEUE_CONNECTION=sync membuat email dikirim langsung tanpa worker terpisah.
+Untuk production yang lebih serius, bisa dibuat worker service sendiri di Railway.
+
+
+11. MIDTRANS BELUM AKTIF
+
+Untuk sekarang kosongkan:
+
+MIDTRANS_MERCHANT_ID=
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_IS_PRODUCTION=false
+
+Project ini punya fallback saat Midtrans belum dikonfigurasi.
+Booking bisa tetap tercatat, tetapi pembayaran asli belum berjalan.
+
+
+12. TEST SETELAH DEPLOY
+
+Cek:
+1. Domain Railway terbuka.
+2. CSS/JS tampil normal.
+3. Halaman login bisa dibuka.
+4. Login Google redirect dan callback sukses.
+5. Email OTP terkirim.
+6. Data dari dentalcare.sql muncul.
+7. Booking bisa dibuat.
+8. Tidak ada error di Railway Logs.
+
+
+13. RINGKASAN PILIHAN
+
+Paling saya rekomendasikan:
+- Railway, kalau kamu ingin pengalaman deploy paling mirip Vercel dan tetap murah untuk awal.
+
+Paling Laravel-native:
+- Laravel Cloud, kalau kamu ingin platform resmi Laravel dan tidak ingin memikirkan Dockerfile.
+
+Paling stabil untuk jangka panjang:
+- DigitalOcean App Platform, kalau budget lebih longgar dan ingin platform cloud yang mature.
+
+Kurang cocok untuk project ini:
+- Vercel, karena project ini Laravel full-stack.
+- Render, kecuali siap memakai MySQL eksternal atau migrasi ke Postgres.
+
+
+14. SUMBER RESMI
+
+Railway Laravel:
+https://docs.railway.com/guides/laravel
+
+Railway MySQL:
+https://docs.railway.com/guides/mysql
+
+Railway pricing:
+https://docs.railway.com/pricing
+
+Railway variables:
+https://docs.railway.com/variables
+
+Laravel Cloud docs:
+https://cloud.laravel.com/docs
+
+Laravel Cloud pricing:
+https://cloud.laravel.com/pricing
+
+DigitalOcean App Platform:
+https://docs.digitalocean.com/products/app-platform/
+
+Render deploy docs:
+https://render.com/docs/deploys
