@@ -11,8 +11,10 @@ use App\Services\BookingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Throwable;
 
 class BookingController extends Controller
 {
@@ -35,7 +37,17 @@ class BookingController extends Controller
 
         $booking = $bookingService->createBooking($request->user(), $validated);
 
-        $request->user()->notify(new BookingCreatedNotification($booking));
+        try {
+            $request->user()->notify(new BookingCreatedNotification($booking));
+        } catch (Throwable $exception) {
+            Log::warning('Booking notification failed after reservation was created.', [
+                'booking_id' => $booking->id,
+                'booking_code' => $booking->booking_code,
+                'user_id' => $request->user()->id,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+        }
 
         if (filled($booking->payment?->redirect_url)) {
             return redirect()->away($booking->payment->redirect_url);
