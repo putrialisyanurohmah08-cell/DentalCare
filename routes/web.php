@@ -38,6 +38,10 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:patient')->group(function () {
         Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
         Route::get('/history', [BookingController::class, 'history'])->name('history.index');
+        Route::post('/history/{booking}/check-payment', [BookingController::class, 'checkPayment'])->name('history.check-payment');
+        Route::get('/payments/midtrans/finish', [BookingController::class, 'paymentFinish'])->name('payment.finish');
+        Route::get('/payments/midtrans/unfinish', [BookingController::class, 'paymentUnfinish'])->name('payment.unfinish');
+        Route::get('/payments/midtrans/error', [BookingController::class, 'paymentError'])->name('payment.error');
     });
 
     Route::prefix('doctor')->name('doctor.')->middleware('role:doctor')->group(function () {

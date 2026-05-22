@@ -12,11 +12,26 @@
             </div>
 
             <div class="row g-4">
+                @php
+                $getServiceImage = function($serviceName) {
+                    $lower = strtolower($serviceName);
+                    if (str_contains($lower, 'atas bawah')) {
+                        return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    } elseif (str_contains($lower, 'bawah')) {
+                        return 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    } elseif (str_contains($lower, 'atas') || str_contains($lower, 'behel')) {
+                        return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    } elseif (str_contains($lower, 'scaling')) {
+                        return 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    }
+                    return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                };
+                @endphp
                 @foreach ($services as $service)
                     <div class="col-lg-4">
-                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+                            <img src="{{ $getServiceImage($service->name) }}" class="card-img-top" alt="{{ $service->name }}" style="height: 200px; object-fit: cover;">
                             <div class="card-body p-4">
-                                <div class="service-icon mb-3">{{ str($service->name)->substr(0, 1) }}</div>
                                 <h2 class="h4 fw-bold">{{ $service->name }}</h2>
                                 <p class="text-secondary">{{ $service->description ?: 'Tindakan dilakukan oleh dokter berpengalaman dengan prosedur yang jelas dan aman.' }}</p>
                                 <div class="d-flex justify-content-between align-items-center">

@@ -12,7 +12,7 @@
                     <thead>
                         <tr>
                             <th>Kode</th>
-                            <th>Dokter & layanan</th>
+                            <th>Dokter &amp; layanan</th>
                             <th>Jadwal</th>
                             <th>Pembayaran</th>
                             <th>Aksi</th>
@@ -42,6 +42,13 @@
                                     <div class="d-grid gap-2">
                                         @if ($booking->payment && $booking->payment->payment_status === \App\Enums\PaymentStatus::Pending && $booking->payment->redirect_url)
                                             <a class="btn btn-sm btn-primary rounded-pill" href="{{ $booking->payment->redirect_url }}" target="_blank">Bayar sekarang</a>
+                                        @endif
+
+                                        @if ($booking->payment && $booking->payment->payment_status === \App\Enums\PaymentStatus::Pending)
+                                            <form method="POST" action="{{ route('history.check-payment', $booking) }}">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill w-100">Cek status pembayaran</button>
+                                            </form>
                                         @endif
 
                                         @if ($booking->payment && $booking->payment->payment_status === \App\Enums\PaymentStatus::Paid)

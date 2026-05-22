@@ -16,18 +16,21 @@
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="hero-card shadow-lg rounded-5 p-4 p-lg-5">
-                        <div class="row g-3">
+                    <div class="rounded-5 overflow-hidden shadow-lg mb-4" style="height: 350px;">
+                        <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Klinik Gigi" class="w-100 h-100" style="object-fit: cover;">
+                    </div>
+                    <div class="hero-card shadow-sm border rounded-5 p-4 bg-white">
+                        <div class="row g-3 text-center">
                             @foreach ([
-                                ['label' => 'Dokter aktif', 'value' => $stats['doctors']],
+                                ['label' => 'Dokter', 'value' => $stats['doctors']],
                                 ['label' => 'Layanan', 'value' => $stats['services']],
                                 ['label' => 'Reservasi', 'value' => $stats['bookings']],
-                                ['label' => 'Transaksi lunas', 'value' => $stats['payments']],
+                                ['label' => 'Transaksi', 'value' => $stats['payments']],
                             ] as $item)
-                                <div class="col-6">
+                                <div class="col-3">
                                     <div class="stat-card h-100">
-                                        <div class="text-secondary small mb-2">{{ $item['label'] }}</div>
-                                        <div class="display-6 fw-bold mb-0">{{ $item['value'] }}</div>
+                                        <div class="h4 fw-bold mb-1 text-primary">{{ $item['value'] }}</div>
+                                        <div class="text-secondary small" style="font-size: 0.75rem;">{{ $item['label'] }}</div>
                                     </div>
                                 </div>
                             @endforeach
@@ -50,11 +53,26 @@
                 <a class="btn btn-outline-primary rounded-pill px-4" href="{{ route('services.index') }}">Lihat semua</a>
             </div>
             <div class="row g-4">
+                @php
+                $getServiceImage = function($serviceName) {
+                    $lower = strtolower($serviceName);
+                    if (str_contains($lower, 'atas bawah')) {
+                        return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    } elseif (str_contains($lower, 'bawah')) {
+                        return 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    } elseif (str_contains($lower, 'atas') || str_contains($lower, 'behel')) {
+                        return 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    } elseif (str_contains($lower, 'scaling')) {
+                        return 'https://images.unsplash.com/photo-1606811841689-23dfddce3e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                    }
+                    return 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+                };
+                @endphp
                 @foreach ($featuredServices as $service)
                     <div class="col-lg-3 col-md-6">
-                        <div class="card border-0 shadow-sm h-100 rounded-4">
+                        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden">
+                            <img src="{{ $getServiceImage($service->name) }}" class="card-img-top" alt="{{ $service->name }}" style="height: 160px; object-fit: cover;">
                             <div class="card-body p-4">
-                                <div class="service-icon mb-3">{{ str($service->name)->substr(0, 1) }}</div>
                                 <h3 class="h5 fw-bold">{{ $service->name }}</h3>
                                 <p class="text-secondary small">{{ $service->description ?: 'Perawatan profesional dengan standar klinik modern.' }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
@@ -87,11 +105,19 @@
                 <a class="btn btn-outline-primary rounded-pill px-4" href="{{ route('doctors.index') }}">Jelajahi dokter</a>
             </div>
             <div class="row g-4">
+                @php
+                $doctorImages = [
+                    'https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+                    'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+                    'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+                    'https://images.unsplash.com/photo-1594824436998-d463d1222453?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
+                ];
+                @endphp
                 @foreach ($featuredDoctors as $doctor)
                     <div class="col-lg-3 col-md-6">
                         <div class="card border-0 shadow-sm h-100 rounded-4">
-                            <div class="card-body p-4">
-                                <div class="doctor-avatar mb-3">{{ str($doctor->name)->substr(0, 1) }}</div>
+                            <div class="card-body p-4 text-center">
+                                <img src="{{ $doctorImages[$loop->index % 4] }}" alt="{{ $doctor->name }}" class="rounded-circle mb-3 shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
                                 <h3 class="h5 fw-bold mb-1">{{ $doctor->name }}</h3>
                                 <div class="text-primary-emphasis fw-semibold small mb-3">{{ $doctor->doctorProfile?->specialization }}</div>
                                 <p class="text-secondary small mb-3">
@@ -112,13 +138,13 @@
 
     <section class="py-5 bg-white">
         <div class="container">
-            <div class="cta-banner rounded-5 p-4 p-lg-5 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
-                <div>
+            <div class="cta-banner rounded-5 p-4 p-lg-5 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4 position-relative overflow-hidden" style="background: linear-gradient(rgba(13, 110, 253, 0.85), rgba(13, 110, 253, 0.85)), url('https://images.unsplash.com/photo-1606811841689-23dfddce3e95?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;">
+                <div class="position-relative z-1">
                     <div class="text-uppercase small text-white-50 mb-2">Siap periksa gigi?</div>
                     <h2 class="display-6 fw-bold text-white mb-2">Booking sekarang dan amankan antrean Anda hari ini.</h2>
                     <p class="text-white-50 mb-0">Pilih dokter, tentukan jadwal, lalu selesaikan pembayaran secara otomatis lewat Midtrans.</p>
                 </div>
-                <a class="btn btn-light btn-lg rounded-pill px-4" href="{{ route('home') }}#booking-section">Mulai reservasi</a>
+                <a class="btn btn-light btn-lg rounded-pill px-4 position-relative z-1" href="{{ route('home') }}#booking-section">Mulai reservasi</a>
             </div>
         </div>
     </section>

@@ -51,6 +51,11 @@ class MidtransService
                     'name' => $booking->service_name,
                 ],
             ],
+            'callbacks' => [
+                'finish' => route('payment.finish'),
+                'unfinish' => route('payment.unfinish'),
+                'error' => route('payment.error'),
+            ],
         ];
 
         $transaction = Snap::createTransaction($payload);
