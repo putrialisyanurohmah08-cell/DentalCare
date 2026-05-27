@@ -92,8 +92,10 @@
         }
     </style>
 
-    <!-- Kop Laporan khusus Cetak/PDF -->
-    <div class="print-only d-none mb-4 border-bottom pb-3">
+    <!-- Container Laporan untuk Ekspor PDF -->
+    <div id="reportContainer" class="bg-white p-3 rounded-4">
+        <!-- Kop Laporan khusus Cetak/PDF -->
+        <div class="print-only d-none mb-4 border-bottom pb-3">
         <div class="row align-items-center">
             <div class="col-8">
                 <h2 class="h3 fw-bold text-primary mb-1">{{ config('clinic.name') }}</h2>
@@ -125,10 +127,10 @@
         </div>
         
         <div>
-            <button type="button" onclick="window.print()" class="btn btn-outline-primary rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
-                  <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m9-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-2-3a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
-                  <path d="M4.708 0A.5.5 0 0 0 4.293.146L.707 3.732a.5.5 0 0 0-.146.415v10.5A1.5 1.5 0 0 0 2 16h12a1.5 1.5 0 0 0 1.5-1.5V4.146a.5.5 0 0 0-.146-.415L11.293.146A.5.5 0 0 0 10.708 0zM1 4h14v10.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5zm12-3v2H3V1z"/>
+            <button type="button" onclick="downloadReportPDF()" class="btn btn-outline-primary rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                  <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                  <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
                 </svg>
                 Unduh / Cetak Laporan
             </button>
@@ -302,11 +304,44 @@
             </div>
         </div>
     </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
+        function downloadReportPDF() {
+            const reportArea = document.getElementById('reportContainer');
+            const kop = document.querySelector('.print-only');
+            
+            // Tampilkan Kop khusus cetak sebelum menangkap canvas
+            if (kop) {
+                kop.classList.remove('d-none');
+            }
+            
+            // Konfigurasi html2pdf
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     'laporan-klinik-' + (chartType === 'monthly' ? 'bulanan' : 'harian') + '-' + new Date().toISOString().slice(0, 10) + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            
+            // Eksekusi pembuatan PDF
+            html2pdf().set(opt).from(reportArea).save().then(() => {
+                // Sembunyikan kembali Kop setelah cetak selesai
+                if (kop) {
+                    kop.classList.add('d-none');
+                }
+            });
+        }
         // Logika Toggle Tab Filter Harian / Bulanan
         document.querySelectorAll('.btn-filter-type').forEach(btn => {
             btn.addEventListener('click', function() {
