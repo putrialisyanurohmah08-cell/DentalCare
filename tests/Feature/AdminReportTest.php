@@ -39,4 +39,31 @@ class AdminReportTest extends TestCase
             ->assertSee('Laporan Klinik')
             ->assertSee('350.000');
     }
+
+    public function test_admin_can_filter_report_by_month(): void
+    {
+        $admin = $this->createAdmin();
+        $patient = $this->createPatient();
+        $doctor = $this->createDoctor();
+        $service = $this->createService();
+        $booking = $this->createBooking($patient, $doctor, $service, [
+            'booking_status' => BookingStatus::Completed,
+            'booking_date' => Carbon::parse('2026-03-20')->toDateString(),
+        ]);
+
+        $this->createPayment($booking, [
+            'payment_status' => PaymentStatus::Paid,
+            'paid_at' => Carbon::parse('2026-03-20 10:00:00'),
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.reports.index', [
+                'filter_type' => 'monthly',
+                'month' => '2026-03',
+            ]))
+            ->assertOk()
+            ->assertSee('Laporan Klinik')
+            ->assertSee('350.000');
+    }
 }
+

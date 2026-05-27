@@ -44,7 +44,7 @@ class BookingDocumentAccessTest extends TestCase
         ]);
 
         $this->createPayment($booking, [
-            'payment_status' => PaymentStatus::Pending,
+            'payment_status' => PaymentStatus::Failed,
         ]);
 
         $this->actingAs($patient)

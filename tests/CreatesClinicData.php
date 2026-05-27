@@ -93,7 +93,7 @@ trait CreatesClinicData
             'booking_id' => $booking->id,
             'order_id' => 'PAY-'.$booking->booking_code,
             'amount' => $booking->service_price,
-            'payment_status' => PaymentStatus::Pending,
+            'payment_status' => PaymentStatus::Failed,
         ], $attributes));
     }
 }

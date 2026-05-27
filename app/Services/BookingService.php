@@ -96,7 +96,7 @@ class BookingService
                     'booking_id' => $booking->id,
                     'order_id' => 'PAY-'.$booking->booking_code,
                     'amount' => $service->price,
-                    'payment_status' => PaymentStatus::Pending,
+                    'payment_status' => PaymentStatus::Failed,
                 ]);
 
                 $transaction = $this->midtransService->createTransaction(

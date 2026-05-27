@@ -16,6 +16,18 @@ class BookingFlowTest extends TestCase
     use CreatesClinicData;
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Carbon::setTestNow('2026-05-18');
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     public function test_booking_create_route_redirects_to_home_booking_section(): void
     {
         $response = $this->get(route('booking.create', [
@@ -152,7 +164,7 @@ class BookingFlowTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('payments', [
-            'payment_status' => PaymentStatus::Pending->value,
+            'payment_status' => PaymentStatus::Failed->value,
             'amount' => $service->price,
         ]);
     }

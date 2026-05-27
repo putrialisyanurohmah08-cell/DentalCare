@@ -25,7 +25,7 @@ class PaymentWebhookTest extends TestCase
             'booking_status' => BookingStatus::PendingPayment,
         ]);
         $payment = $this->createPayment($booking, [
-            'payment_status' => PaymentStatus::Pending,
+            'payment_status' => PaymentStatus::Failed,
         ]);
 
         $midtrans = Mockery::mock(MidtransService::class);

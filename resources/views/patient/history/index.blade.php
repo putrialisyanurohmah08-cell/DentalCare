@@ -40,11 +40,11 @@
                                 </td>
                                 <td>
                                     <div class="d-grid gap-2">
-                                        @if ($booking->payment && $booking->payment->payment_status === \App\Enums\PaymentStatus::Pending && $booking->payment->redirect_url)
+                                        @if ($booking->payment && $booking->booking_status === \App\Enums\BookingStatus::PendingPayment && $booking->payment->redirect_url)
                                             <a class="btn btn-sm btn-primary rounded-pill" href="{{ $booking->payment->redirect_url }}" target="_blank">Bayar sekarang</a>
                                         @endif
 
-                                        @if ($booking->payment && $booking->payment->payment_status === \App\Enums\PaymentStatus::Pending)
+                                        @if ($booking->payment && $booking->booking_status === \App\Enums\BookingStatus::PendingPayment)
                                             <form method="POST" action="{{ route('history.check-payment', $booking) }}">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill w-100">Cek status pembayaran</button>

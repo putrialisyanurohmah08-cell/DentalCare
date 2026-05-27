@@ -109,11 +109,11 @@ class BookingController extends Controller
                 'paid_at'        => $status === PaymentStatus::Paid ? now() : $payment->paid_at,
             ]);
 
-            $bookingStatus = match ($status) {
-                PaymentStatus::Paid    => BookingStatus::Confirmed,
-                PaymentStatus::Expired,
-                PaymentStatus::Failed  => BookingStatus::Cancelled,
-                default                => BookingStatus::PendingPayment,
+            $rawStatus = $statusPayload['transaction_status'] ?? null;
+            $bookingStatus = match (true) {
+                $status === PaymentStatus::Paid => BookingStatus::Confirmed,
+                in_array($rawStatus, ['expire', 'cancel', 'deny']) => BookingStatus::Cancelled,
+                default => BookingStatus::PendingPayment,
             };
 
             $booking->update(['booking_status' => $bookingStatus]);
@@ -128,12 +128,8 @@ class BookingController extends Controller
                 return redirect()->route('history.index')->with('success', 'Pembayaran berhasil dikonfirmasi! Reservasi Anda telah terkonfirmasi.');
             }
 
-            if ($status === PaymentStatus::Expired) {
-                return redirect()->route('history.index')->with('error', 'Pembayaran telah kedaluwarsa. Silakan buat reservasi baru.');
-            }
-
-            if ($status === PaymentStatus::Failed) {
-                return redirect()->route('history.index')->with('error', 'Pembayaran gagal. Silakan buat reservasi baru.');
+            if (in_array($rawStatus, ['expire', 'cancel', 'deny'])) {
+                return redirect()->route('history.index')->with('error', 'Pembayaran telah gagal atau kedaluwarsa. Silakan buat reservasi baru.');
             }
 
             return redirect()->route('history.index')->with('status', 'Status pembayaran masih pending. Silakan selesaikan pembayaran dan cek kembali.');
@@ -182,11 +178,11 @@ class BookingController extends Controller
                         'paid_at'        => $status === PaymentStatus::Paid ? now() : $payment->paid_at,
                     ]);
 
-                    $bookingStatus = match ($status) {
-                        PaymentStatus::Paid    => BookingStatus::Confirmed,
-                        PaymentStatus::Expired,
-                        PaymentStatus::Failed  => BookingStatus::Cancelled,
-                        default                => BookingStatus::PendingPayment,
+                    $rawStatus = $statusPayload['transaction_status'] ?? null;
+                    $bookingStatus = match (true) {
+                        $status === PaymentStatus::Paid => BookingStatus::Confirmed,
+                        in_array($rawStatus, ['expire', 'cancel', 'deny']) => BookingStatus::Cancelled,
+                        default => BookingStatus::PendingPayment,
                     };
 
                     $payment->booking->update(['booking_status' => $bookingStatus]);

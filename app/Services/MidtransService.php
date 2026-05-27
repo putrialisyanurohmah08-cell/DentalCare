@@ -106,8 +106,6 @@ class MidtransService
         return match (true) {
             $transactionStatus === 'settlement' => PaymentStatus::Paid,
             $transactionStatus === 'capture' && $fraudStatus === 'accept' => PaymentStatus::Paid,
-            $transactionStatus === 'pending' => PaymentStatus::Pending,
-            $transactionStatus === 'expire' => PaymentStatus::Expired,
             default => PaymentStatus::Failed,
         };
     }

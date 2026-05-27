@@ -36,9 +36,10 @@ class PaymentWebhookController extends Controller
             'paid_at' => $status === PaymentStatus::Paid ? now() : $payment->paid_at,
         ]);
 
-        $bookingStatus = match ($status) {
-            PaymentStatus::Paid => BookingStatus::Confirmed,
-            PaymentStatus::Expired, PaymentStatus::Failed => BookingStatus::Cancelled,
+        $rawStatus = $sourcePayload['transaction_status'] ?? null;
+        $bookingStatus = match (true) {
+            $status === PaymentStatus::Paid => BookingStatus::Confirmed,
+            in_array($rawStatus, ['expire', 'cancel', 'deny']) => BookingStatus::Cancelled,
             default => BookingStatus::PendingPayment,
         };
 

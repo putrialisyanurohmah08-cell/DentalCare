@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
@@ -24,7 +25,9 @@ class PaymentController extends Controller
             'payments' => $query->paginate(12)->withQueryString(),
             'stats' => [
                 'total'   => Payment::count(),
-                'pending' => Payment::where('payment_status', PaymentStatus::Pending->value)->count(),
+                'pending' => Payment::where('payment_status', PaymentStatus::Failed->value)
+                    ->whereHas('booking', fn($q) => $q->where('booking_status', BookingStatus::PendingPayment->value))
+                    ->count(),
                 'paid'    => Payment::where('payment_status', PaymentStatus::Paid->value)->count(),
                 'revenue' => Payment::where('payment_status', PaymentStatus::Paid->value)->sum('amount'),
             ],

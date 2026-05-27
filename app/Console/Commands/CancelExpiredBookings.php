@@ -77,8 +77,8 @@ class CancelExpiredBookings extends Command
             // Cancel the booking
             $booking->update(['booking_status' => BookingStatus::Cancelled]);
 
-            if ($payment && $payment->payment_status === PaymentStatus::Pending) {
-                $payment->update(['payment_status' => PaymentStatus::Expired]);
+            if ($payment) {
+                $payment->update(['payment_status' => PaymentStatus::Failed]);
             }
 
             $cancelled++;
